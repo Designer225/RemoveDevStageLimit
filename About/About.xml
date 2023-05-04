@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+    <name>Remove Gear Dev Stage Limit</name>
+    <author>Designer225</author>
+    <url>www.anything.com</url>
+    <packageId>designer225.removedevstagelimit</packageId>
+    <supportedVersions>
+		  <li>1.4</li>
+    </supportedVersions>
+
+    <description>Makes gear exclusive to adults or children accessible to both.</description>
+
+    <loadAfter>
+        <li>Ludeon.RimWorld</li>
+        <li>Ludeon.RimWorld.Royalty</li>
+        <li>Ludeon.RimWorld.Ideology</li>
+        <li>Ludeon.RimWorld.Biotech</li>
+    </loadAfter>
+</ModMetaData>
