@@ -45,7 +45,9 @@ namespace RemoveDevStageLimit
             {
                 if (settings.IgnoredApparels.TryGetValue(apparel, out bool value))
                     ignoredApparelsCache[apparel].Value = value;
-                else ignoredApparelsCache[apparel].Value = DefaultIgnoreApparel;
+                else if (ignoredApparelsCache.TryGetValue(apparel, out var element))
+                    element.Value = DefaultIgnoreApparel;
+                else ignoredApparelsCache[apparel] = new ReferenceableElement<bool>(DefaultIgnoreApparel);
                 listingStandard.CheckboxLabeled(apparel.defName.ToString(), ref ignoredApparelsCache[apparel].Value);
             }
             listingStandard.End();
