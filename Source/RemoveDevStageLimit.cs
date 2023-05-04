@@ -23,7 +23,7 @@ namespace RemoveDevStageLimit
         {
             Listing_Standard listingStandard = new Listing_Standard();
             listingStandard.Begin(inRect);
-            listingStandard.Label("RemoveDevStageLimit.RestartRequired");
+            listingStandard.Label("RemoveDevStageLimit.RestartRequired".Translate());
             listingStandard.CheckboxLabeled(
                 "RemoveDevStageLimit.MakeAdultApparelUsable".Translate(),
                 ref settings.MakeAdultApparelUsable,
@@ -39,7 +39,7 @@ namespace RemoveDevStageLimit
                 "RemoveDevStageLimit.Debug.Tooltip".Translate());
             // manual control over what to patch
             listingStandard.GapLine();
-            listingStandard.Label("RemoveDevStageLimit.IgnoreFilters");
+            listingStandard.Label("RemoveDevStageLimit.IgnoreFilters".Translate());
             // update apparels before displaying all settings
             foreach (var apparel in DefDatabase<ThingDef>.AllDefs.Where(x => x.IsApparel))
             {

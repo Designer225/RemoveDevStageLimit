@@ -2,10 +2,12 @@
 <LanguageData>
     <NoMoreImpassableTiles>Remove Gear Dev Stage Limit</NoMoreImpassableTiles>
 
+    <RemoveDevStageLimit.RestartRequired>WARNING: RESTART REQUIRED FOR ALL SETTINGS!!!</RemoveDevStageLimit.RestartRequired>
     <RemoveDevStageLimit.MakeAdultApparelUsable>Make Adult Apparel Usable</RemoveDevStageLimit.MakeAdultApparelUsable>
     <RemoveDevStageLimit.MakeAdultApparelUsable.Tooltip>Enable to make adult apparel usable by children.</RemoveDevStageLimit.MakeAdultApparelUsable.Tooltip>
     <RemoveDevStageLimit.MakeChildApparelUsable>Make Child Apparel Usable</RemoveDevStageLimit.MakeChildApparelUsable>
     <RemoveDevStageLimit.MakeChildApparelUsable.Tooltip>Enable to make child apparel usable by adults.</RemoveDevStageLimit.MakeChildApparelUsable.Tooltip>
     <RemoveDevStageLimit.Debug>Debug Output</RemoveDevStageLimit.Debug>
     <RemoveDevStageLimit.Debug.Tooltip>Enable to print debug output to Player.log, including auto-patcher output.</RemoveDevStageLimit.Debug.Tooltip>
+    <RemoveDevStageLimit.IgnoreFilters>Configure which apparel to be ignored:</RemoveDevStageLimit.IgnoreFilters>
 </LanguageData>
