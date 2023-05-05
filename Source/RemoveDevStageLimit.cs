@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HugsLib;
+using HugsLib.Settings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -9,81 +11,109 @@ using Verse;
 
 namespace RemoveDevStageLimit
 {
-    public sealed class RemoveDevStageLimit : Mod
+    public sealed class RemoveDevStageLimit : ModBase
     {
+        private const bool DefaultMakeAdultApparelUsable = true;
+        private const bool DefaultMakeChildApparelUsable = false;
+        private const bool DefaultDebug = false;
         private const bool DefaultIgnoreApparel = false;
+        private const DevelopmentalStage Both = DevelopmentalStage.Adult | DevelopmentalStage.Child;
 
-        Dictionary<ThingDef, ReferenceableElement<bool>> ignoredApparelsCache; // needs separate storage since default dictionaries do not support ref values
-        Vector2 scrollPos;
+        private static RemoveDevStageLimit instance;
+        public static RemoveDevStageLimit Instance => instance;
 
-        public RemoveDevStageLimit(ModContentPack content) : base(content)
+        private SettingHandle<bool> m_makeAdultApparelUsable;
+        public bool MakeAdultApparelUsable => m_makeAdultApparelUsable;
+
+        private SettingHandle<bool> m_makeChildApparelUsable;
+        public bool MakeChildApparelUsable => m_makeChildApparelUsable;
+
+        private SettingHandle<bool> m_debug;
+        public bool Debug => m_debug;
+
+        private Dictionary<ThingDef, SettingHandle<bool>> m_ignoredApparels = new Dictionary<ThingDef, SettingHandle<bool>>();
+        public IReadOnlyDictionary<ThingDef, bool> IgnoredApparels { get; private set; }
+
+        private Dictionary<ThingDef, DevelopmentalStage> m_originalDevStates = new Dictionary<ThingDef, DevelopmentalStage>();
+        public IReadOnlyDictionary<ThingDef, DevelopmentalStage> OriginalDevStates => m_originalDevStates;
+
+        public RemoveDevStageLimit()
         {
-            ignoredApparelsCache = new Dictionary<ThingDef, ReferenceableElement<bool>>();
+            instance = this;
         }
 
-        public override void DoSettingsWindowContents(Rect inRect)
+        public override void DefsLoaded()
         {
-            // initialize scrolling
-            Listing_Standard listingStandard = new Listing_Standard();
-            Rect outRect = inRect;
-            Rect scrollRect = new Rect(0f, 0f, inRect.width - 16f, inRect.height * 10f + 50);
-            Widgets.BeginScrollView(outRect, ref scrollPos, scrollRect);
-            // actual stuff
-            listingStandard.Begin(scrollRect);
-            listingStandard.Label("RemoveDevStageLimit.RestartRequired".Translate());
-            listingStandard.CheckboxLabeled(
-                "RemoveDevStageLimit.MakeAdultApparelUsable".Translate(),
-                ref RemoveDevStageLimitSettings.Instance.MakeAdultApparelUsable,
-                "RemoveDevStageLimit.MakeAdultApparelUsable.Tooltip".Translate());
-            listingStandard.CheckboxLabeled(
-                "RemoveDevStageLimit.MakeChildApparelUsable".Translate(),
-                ref RemoveDevStageLimitSettings.Instance.MakeChildApparelUsable,
-                "RemoveDevStageLimit.MakeChildApparelUsable.Tooltip".Translate());
-            listingStandard.GapLine();
-            listingStandard.CheckboxLabeled(
-                "RemoveDevStageLimit.Debug".Translate(),
-                ref RemoveDevStageLimitSettings.Instance.Debug,
-                "RemoveDevStageLimit.Debug.Tooltip".Translate());
-            // manual control over what to patch
-            listingStandard.GapLine();
-            listingStandard.Label("RemoveDevStageLimit.IgnoreFilters".Translate());
-            // update apparels before displaying all settings
-            foreach (var apparel in DefDatabase<ThingDef>.AllDefs.Where(x => x.IsApparel))
+            base.DefsLoaded();
+            Settings.GetHandle<SettingsFiller>("RestartRequired", "", "").CustomDrawerFullWidth = rect =>
             {
-                if (!RemoveDevStageLimitSettings.Instance.IgnoredApparels.TryGetValue(apparel, out bool value))
-                    value = DefaultIgnoreApparel;
-                if (ignoredApparelsCache.TryGetValue(apparel, out var cacheValue))
-                    cacheValue.Value = value;
-                else
+                Listing_Standard listingStandard = new Listing_Standard();
+                listingStandard.Begin(rect);
+                listingStandard.Label("RemoveDevStageLimit.RestartRequired".Translate());
+                listingStandard.End();
+                return false;
+            };
+            m_makeAdultApparelUsable = Settings.GetHandle("MakeAdultApparelUsable", "RemoveDevStageLimit.MakeAdultApparelUsable".Translate(),
+                "RemoveDevStageLimit.MakeAdultApparelUsable.Tooltip".Translate(), DefaultMakeAdultApparelUsable);
+            m_makeChildApparelUsable = Settings.GetHandle("MakeChildApparelUsable", "RemoveDevStageLimit.MakeChildApparelUsable".Translate(),
+                "RemoveDevStageLimit.MakeChildApparelUsable.Tooltip".Translate(), DefaultMakeChildApparelUsable);
+            Settings.GetHandle<SettingsFiller>("GapLine", "", "").CustomDrawerFullWidth = rect =>
+            {
+                Listing_Standard listingStandard = new Listing_Standard();
+                listingStandard.Begin(rect);
+                listingStandard.GapLine();
+                listingStandard.End();
+                return false;
+            };
+            m_debug = Settings.GetHandle("Debug", "RemoveDevStageLimit.Debug".Translate(),
+                "RemoveDevStageLimit.Debug.Tooltip".Translate(), DefaultDebug);
+
+            Settings.GetHandle<SettingsFiller>("IgnoreFilters", "", "").CustomDrawerFullWidth = rect =>
+            {
+                Listing_Standard listingStandard = new Listing_Standard();
+                listingStandard.Begin(rect);
+                listingStandard.GapLine();
+                listingStandard.Label("RemoveDevStageLimit.IgnoreFilters".Translate());
+                listingStandard.End();
+                return false;
+            };
+            // patch everything
+            if (MakeAdultApparelUsable || MakeChildApparelUsable)
+            {
+                foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(x => x.IsApparel))
                 {
-                    cacheValue = new ReferenceableElement<bool>(value);
-                    ignoredApparelsCache[apparel] = cacheValue;
+                    m_ignoredApparels[def] = Settings.GetHandle(def.defName, def.label, def.description, DefaultIgnoreApparel);
+                    if (m_ignoredApparels[def].Value) continue;
+
+                    var apparel = def.apparel;
+                    if ((apparel.developmentalStageFilter & Both) == Both) return;
+
+                    if (MakeAdultApparelUsable && (apparel.developmentalStageFilter & DevelopmentalStage.Adult) == DevelopmentalStage.Adult)
+                    {
+                        m_originalDevStates[def] = apparel.developmentalStageFilter;
+                        apparel.developmentalStageFilter |= DevelopmentalStage.Child;
+                    }
+                    else if (MakeChildApparelUsable && (apparel.developmentalStageFilter & DevelopmentalStage.Child) == DevelopmentalStage.Child)
+                    {
+                        m_originalDevStates[def] = apparel.developmentalStageFilter;
+                        apparel.developmentalStageFilter |= DevelopmentalStage.Adult;
+                    }
+                    else continue;
+
+                    if (Debug)
+                        Log.Message("[RemoveDevStageLimit] Patched " + def.defName.ToString());
                 }
-                listingStandard.CheckboxLabeled(apparel.defName.ToString(), ref ignoredApparelsCache[apparel].Value);
             }
-            listingStandard.End();
-            Widgets.EndScrollView();
-            base.DoSettingsWindowContents(inRect);
+            IgnoredApparels = m_ignoredApparels.ToDictionary(kv => kv.Key, kv => kv.Value.Value);
         }
 
-        public override void WriteSettings()
+        private sealed class SettingsFiller : SettingHandleConvertible
         {
-            foreach (var pair in ignoredApparelsCache)
-                RemoveDevStageLimitSettings.Instance.IgnoredApparels[pair.Key] = pair.Value.Value;
-            base.WriteSettings();
-        }
+            public override bool ShouldBeSaved => false;
 
-        public override string SettingsCategory() => "RemoveDevStageLimit".Translate();
+            public override void FromString(string settingValue) { }
 
-        private class ReferenceableElement<T>
-        {
-            T m_value;
-            public ref T Value => ref m_value;
-
-            public ReferenceableElement(T value)
-            {
-                m_value = value;
-            }
+            public override string ToString() => string.Empty;
         }
     }
 }

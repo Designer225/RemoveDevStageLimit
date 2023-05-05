@@ -9,11 +9,22 @@
     </supportedVersions>
 
     <description>Makes gear exclusive to adults or children accessible to both.</description>
+    
+    <modDependencies>
+    <!-- Using hugslib as an example here. -->
+        <li>
+            <packageId>UnlimitedHugs.HugsLib</packageId>
+            <displayName>HugsLib</displayName>
+            <downloadUrl>https://github.com/UnlimitedHugs/RimworldHugsLib/releases/latest</downloadUrl>
+            <steamWorkshopUrl>steam://url/CommunityFilePage/818773962</steamWorkshopUrl>
+        </li>
+    </modDependencies>
 
     <loadAfter>
         <li>Ludeon.RimWorld</li>
         <li>Ludeon.RimWorld.Royalty</li>
         <li>Ludeon.RimWorld.Ideology</li>
         <li>Ludeon.RimWorld.Biotech</li>
+        <li>UnlimitedHugs.HugsLib</li>
     </loadAfter>
 </ModMetaData>
