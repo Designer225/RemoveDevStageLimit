@@ -86,7 +86,7 @@ namespace RemoveDevStageLimit
                     if (m_ignoredApparels[def].Value) continue;
 
                     var apparel = def.apparel;
-                    if ((apparel.developmentalStageFilter & Both) == Both) return;
+                    if ((apparel.developmentalStageFilter & Both) == Both) continue;
 
                     if (MakeAdultApparelUsable && (apparel.developmentalStageFilter & DevelopmentalStage.Adult) == DevelopmentalStage.Adult)
                     {
