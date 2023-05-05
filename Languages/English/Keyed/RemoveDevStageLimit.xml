@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-    <NoMoreImpassableTiles>Remove Gear Dev Stage Limit</NoMoreImpassableTiles>
+    <RemoveDevStageLimit>Remove Gear Dev Stage Limit</RemoveDevStageLimit>
 
     <RemoveDevStageLimit.RestartRequired>WARNING: RESTART REQUIRED FOR ALL SETTINGS!!!</RemoveDevStageLimit.RestartRequired>
     <RemoveDevStageLimit.MakeAdultApparelUsable>Make Adult Apparel Usable</RemoveDevStageLimit.MakeAdultApparelUsable>

@@ -3,7 +3,7 @@
     <name>Remove Gear Dev Stage Limit</name>
     <author>Designer225</author>
     <url>www.anything.com</url>
-    <packageId>designer225.removedevstagelimit</packageId>
+    <packageId>Designer225.RemoveDevStageLimit</packageId>
     <supportedVersions>
 		  <li>1.4</li>
     </supportedVersions>

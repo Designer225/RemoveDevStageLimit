@@ -1,41 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
 namespace RemoveDevStageLimit
 {
-    public class RemoveDevStageLimit : Mod
+    public sealed class RemoveDevStageLimit : Mod
     {
         private const bool DefaultIgnoreApparel = false;
 
-        RemoveDevStageLimitSettings settings;
         Dictionary<ThingDef, ReferenceableElement<bool>> ignoredApparelsCache; // needs separate storage since default dictionaries do not support ref values
+        Vector2 scrollPos;
 
         public RemoveDevStageLimit(ModContentPack content) : base(content)
         {
-            settings = GetSettings<RemoveDevStageLimitSettings>();
             ignoredApparelsCache = new Dictionary<ThingDef, ReferenceableElement<bool>>();
         }
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
+            // initialize scrolling
             Listing_Standard listingStandard = new Listing_Standard();
-            listingStandard.Begin(inRect);
+            Rect outRect = inRect;
+            Rect scrollRect = new Rect(0f, 0f, inRect.width - 16f, inRect.height * 10f + 50);
+            Widgets.BeginScrollView(outRect, ref scrollPos, scrollRect);
+            // actual stuff
+            listingStandard.Begin(scrollRect);
             listingStandard.Label("RemoveDevStageLimit.RestartRequired".Translate());
             listingStandard.CheckboxLabeled(
                 "RemoveDevStageLimit.MakeAdultApparelUsable".Translate(),
-                ref settings.MakeAdultApparelUsable,
+                ref RemoveDevStageLimitSettings.Instance.MakeAdultApparelUsable,
                 "RemoveDevStageLimit.MakeAdultApparelUsable.Tooltip".Translate());
             listingStandard.CheckboxLabeled(
                 "RemoveDevStageLimit.MakeChildApparelUsable".Translate(),
-                ref settings.MakeChildApparelUsable,
+                ref RemoveDevStageLimitSettings.Instance.MakeChildApparelUsable,
                 "RemoveDevStageLimit.MakeChildApparelUsable.Tooltip".Translate());
             listingStandard.GapLine();
             listingStandard.CheckboxLabeled(
                 "RemoveDevStageLimit.Debug".Translate(),
-                ref settings.Debug,
+                ref RemoveDevStageLimitSettings.Instance.Debug,
                 "RemoveDevStageLimit.Debug.Tooltip".Translate());
             // manual control over what to patch
             listingStandard.GapLine();
@@ -43,28 +50,30 @@ namespace RemoveDevStageLimit
             // update apparels before displaying all settings
             foreach (var apparel in DefDatabase<ThingDef>.AllDefs.Where(x => x.IsApparel))
             {
-                if (settings.IgnoredApparels.TryGetValue(apparel, out bool value))
-                    ignoredApparelsCache[apparel].Value = value;
-                else if (ignoredApparelsCache.TryGetValue(apparel, out var element))
-                    element.Value = DefaultIgnoreApparel;
-                else ignoredApparelsCache[apparel] = new ReferenceableElement<bool>(DefaultIgnoreApparel);
+                if (!RemoveDevStageLimitSettings.Instance.IgnoredApparels.TryGetValue(apparel, out bool value))
+                    value = DefaultIgnoreApparel;
+                if (ignoredApparelsCache.TryGetValue(apparel, out var cacheValue))
+                    cacheValue.Value = value;
+                else
+                {
+                    cacheValue = new ReferenceableElement<bool>(value);
+                    ignoredApparelsCache[apparel] = cacheValue;
+                }
                 listingStandard.CheckboxLabeled(apparel.defName.ToString(), ref ignoredApparelsCache[apparel].Value);
             }
             listingStandard.End();
+            Widgets.EndScrollView();
             base.DoSettingsWindowContents(inRect);
         }
 
         public override void WriteSettings()
         {
             foreach (var pair in ignoredApparelsCache)
-                settings.IgnoredApparels[pair.Key] = pair.Value.Value;
+                RemoveDevStageLimitSettings.Instance.IgnoredApparels[pair.Key] = pair.Value.Value;
             base.WriteSettings();
         }
 
-        public override string SettingsCategory()
-        {
-            return "RemoveDevStageLimit".Translate();
-        }
+        public override string SettingsCategory() => "RemoveDevStageLimit".Translate();
 
         private class ReferenceableElement<T>
         {

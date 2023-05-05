@@ -13,9 +13,14 @@ namespace RemoveDevStageLimit
     {
         static RemoveDevStageLimitPatcher()
         {
+            if (!RemoveDevStageLimitSettings.Instance.MakeAdultApparelUsable && !RemoveDevStageLimitSettings.Instance.MakeChildApparelUsable) return;
+
             foreach (var def in DefDatabase<ThingDef>.AllDefs.Where(x => x.IsApparel))
             {
+                // give each apparel an ignore setting. if one already exists, read it
                 if (RemoveDevStageLimitSettings.Instance.IgnoredApparels.TryGetValue(def, out bool value) && value) continue;
+
+                // actual patching, if apparel is not set to ignore.
                 var apparel = def.apparel;
                 var filterToAppend = DevelopmentalStage.None;
                 if ((apparel.developmentalStageFilter & DevelopmentalStage.Adult) == DevelopmentalStage.Adult
