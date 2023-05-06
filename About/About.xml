@@ -2,7 +2,7 @@
 <ModMetaData>
     <name>Remove Gear Dev Stage Limit</name>
     <author>Designer225</author>
-    <url>www.anything.com</url>
+    <url>https://github.com/Designer225/RemoveDevStageLimit</url>
     <packageId>Designer225.RemoveDevStageLimit</packageId>
     <supportedVersions>
 		  <li>1.4</li>
