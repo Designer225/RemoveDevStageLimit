@@ -68,11 +68,18 @@ namespace RemoveDevStageLimit
             m_debug = Settings.GetHandle("Debug", "RemoveDevStageLimit.Debug".Translate(),
                 "RemoveDevStageLimit.Debug.Tooltip".Translate(), DefaultDebug);
 
-            Settings.GetHandle<SettingsFiller>("IgnoreFilters", "", "").CustomDrawerFullWidth = rect =>
+            Settings.GetHandle<SettingsFiller>("GapLine2", "", "").CustomDrawerFullWidth = rect =>
             {
                 Listing_Standard listingStandard = new Listing_Standard();
                 listingStandard.Begin(rect);
                 listingStandard.GapLine();
+                listingStandard.End();
+                return false;
+            };
+            Settings.GetHandle<SettingsFiller>("IgnoreFilters", "", "").CustomDrawerFullWidth = rect =>
+            {
+                Listing_Standard listingStandard = new Listing_Standard();
+                listingStandard.Begin(rect);
                 listingStandard.Label("RemoveDevStageLimit.IgnoreFilters".Translate());
                 listingStandard.End();
                 return false;

@@ -18,9 +18,11 @@ namespace RemoveDevStageLimit
         {
             if (RemoveDevStageLimit.Instance.OriginalDevStates.TryGetValue(apparel.def, out var value))
             {
-                if (RemoveDevStageLimit.Instance.MakeAdultApparelUsable && (value & DevelopmentalStage.Adult) == DevelopmentalStage.Adult)
-                    bodyType = BodyTypeDefOf.Male;
-                else if (RemoveDevStageLimit.Instance.MakeChildApparelUsable && (value & DevelopmentalStage.Child) == DevelopmentalStage.Child)
+                if (RemoveDevStageLimit.Instance.MakeAdultApparelUsable
+                    && (value & DevelopmentalStage.Adult) == DevelopmentalStage.Adult && bodyType == BodyTypeDefOf.Child)
+                    bodyType = BodyTypeDefOf.Thin;
+                else if (RemoveDevStageLimit.Instance.MakeChildApparelUsable
+                    && (value & DevelopmentalStage.Child) == DevelopmentalStage.Child)
                     bodyType = BodyTypeDefOf.Child;
             }
         }
