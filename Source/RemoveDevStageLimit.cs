@@ -32,7 +32,7 @@ namespace RemoveDevStageLimit
         public bool Debug => m_debug;
 
         private Dictionary<ThingDef, SettingHandle<bool>> m_ignoredApparels = new Dictionary<ThingDef, SettingHandle<bool>>();
-        public IReadOnlyDictionary<ThingDef, bool> IgnoredApparels { get; private set; }
+        public IReadOnlyDictionary<ThingDef, bool> IgnoredApparels => m_ignoredApparels.ToDictionary(kv => kv.Key, kv => kv.Value.Value);
 
         private Dictionary<ThingDef, DevelopmentalStage> m_originalDevStates = new Dictionary<ThingDef, DevelopmentalStage>();
         public IReadOnlyDictionary<ThingDef, DevelopmentalStage> OriginalDevStates => m_originalDevStates;
@@ -111,7 +111,6 @@ namespace RemoveDevStageLimit
                         Log.Message("[RemoveDevStageLimit] Patched " + def.defName.ToString());
                 }
             }
-            IgnoredApparels = m_ignoredApparels.ToDictionary(kv => kv.Key, kv => kv.Value.Value);
         }
 
         private sealed class SettingsFiller : SettingHandleConvertible
